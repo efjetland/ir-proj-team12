@@ -17,7 +17,7 @@ def fetch_queries():
 
     TRAIN_SIZE = int(len(queries) * 0.8)
 
-    TRAIN_QUERY = queries[:TRAIN_SIZE]
+    TRAIN_QUERY = [q for q in queries[:TRAIN_SIZE] if q['category'] == 'resource']
     TEST_QUERY = queries[TRAIN_SIZE:]
 
     print(len(TRAIN_QUERY))
