@@ -93,10 +93,10 @@ def type_centric_scorer(es, index_name, query, field='description', k=100):
     scores = sorted(scores,key=lambda tup: tup[1], reverse=True)
     return [x[0] for x in scores]
 
-def score(queries, es, index_name, scorer, k):
+def score(queries, es, index_name, scorer, field='description', k=100):
     query_scores = []
     for query in queries:
-        scores = scorer(es, index_name, query['question'], k=k)
+        scores = scorer(es, index_name, query['question'], field=field, k=k)
         query_scores.append({'id': query['id'], 'category': 'resource', 'type': scores})
     return query_scores
         
@@ -104,18 +104,21 @@ def score(queries, es, index_name, scorer, k):
 
 def main():
     es = Elasticsearch()
-    TRAIN_QUERY, _ = fetch_queries()
+    TRAIN_QUERY, TEST_QUERY = fetch_queries()
     INDEX_NAME_ENTITY = 'nlp_entity'
     INDEX_NAME_TYPE = 'nlp_type'
 
-    ec_100 = score(TRAIN_QUERY, es, INDEX_NAME_ENTITY, entity_centric_scorer, 100)
-    tc_100 = score(TRAIN_QUERY, es, INDEX_NAME_TYPE, type_centric_scorer, 100)
+    ec_100 = score(TEST_QUERY, es, INDEX_NAME_ENTITY, entity_centric_scorer, k=100)
+    tc_100 = score(TEST_QUERY, es, INDEX_NAME_TYPE, type_centric_scorer, k=100)
+    qt_100 = score(TEST_QUERY, es, INDEX_NAME_TYPE, type_centric_scorer,'question', 100)
     with open('ec_100.json', 'w') as output:
         json.dump(ec_100, output)
     with open('tc_100.json', 'w') as output:
         json.dump(tc_100, output)
+    with open('qt_100.json', 'w') as output:
+        json.dump(qt_100, output)
     with open('gold.json', 'w') as output:
-        json.dump(TRAIN_QUERY, output)
+        json.dump(TEST_QUERY, output)
 
 
 if __name__ == "__main__":
